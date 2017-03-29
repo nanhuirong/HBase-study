@@ -15,11 +15,11 @@
         <socket.version>0.8.2</socket.version>
     </properties>
     <dependencies>
-        <!--<dependency>-->
-            <!--<groupId>org.apache.hbase</groupId>-->
-            <!--<artifactId>hbase</artifactId>-->
-            <!--<version>${hbase.version}</version>-->
-        <!--</dependency>-->
+        <dependency>
+            <groupId>org.apache.hbase</groupId>
+            <artifactId>hbase</artifactId>
+            <version>${hbase.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-common</artifactId>

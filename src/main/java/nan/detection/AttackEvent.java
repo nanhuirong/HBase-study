@@ -16,7 +16,8 @@ public class AttackEvent {
     public String typeDescription;
     public String typeCode;
 
-    public AttackEvent(String date, String srcIp, String srcPort, String dstIp, String dstPort, String protocal, String flag, String typeDescription, String typeCode) {
+    public AttackEvent(String date, String srcIp, String srcPort, String dstIp, String dstPort,
+                       String protocal, String flag, String typeDescription, String typeCode) {
         this.date = date;
         this.srcIp = srcIp;
         this.srcPort = srcPort;

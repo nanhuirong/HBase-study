@@ -49,6 +49,24 @@ public class StorageManagement {
         table.put(put);
     }
 
+    public void addApplicationNetflow(List<Netflow> list)throws Exception{
+        List<Put> puts = new ArrayList<Put>();
+        HTable table = new HTable(conf, APPLICATION_NETFLOW);
+        for (Netflow netflow : list){
+            String rowKey = netflow.getTime() + "-" + netflow.getSrcIp() + "-" + netflow.getDstIp() + "-" + netflow.getProtocol();
+            Put put = new Put(Bytes.toBytes(rowKey));
+            put.add(Bytes.toBytes("default_cf"), Bytes.toBytes("time"), Bytes.toBytes(String.valueOf(netflow.getTime())));
+            put.add(Bytes.toBytes("default_cf"), Bytes.toBytes("srcIp"), Bytes.toBytes(String.valueOf(netflow.getSrcIp())));
+            put.add(Bytes.toBytes("default_cf"), Bytes.toBytes("srcPort"), Bytes.toBytes(String.valueOf(netflow.getSrcPort())));
+            put.add(Bytes.toBytes("default_cf"), Bytes.toBytes("dstIp"), Bytes.toBytes(String.valueOf(netflow.getDstIp())));
+            put.add(Bytes.toBytes("default_cf"), Bytes.toBytes("dstPort"), Bytes.toBytes(String.valueOf(netflow.getDstPort())));
+            put.add(Bytes.toBytes("default_cf"), Bytes.toBytes("protocal"), Bytes.toBytes(String.valueOf(netflow.getProtocol())));
+            puts.add(put);
+        }
+        table.put(puts);
+        table.close();
+    }
+
     /**
      * 将DNS 的netFlow 五元组从HBase 取出
      * @param regex

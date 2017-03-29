@@ -5,8 +5,10 @@ import io.socket.client.Socket;
 import nan.Application.Metrics;
 import nan.Application.Netflow;
 import nan.hbase.StorageManagement;
+import nan.remote.SendToRemote;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -26,8 +28,8 @@ public class businessMain {
         String time = sdf.format(calendar.getTime());
         System.out.println(time);
         String[] timeSplit = time.split(" ");
-        String yearMonthDay = timeSplit[0];
-//        String yearMonthDay = "2016-05-14";
+//        String yearMonthDay = timeSplit[0];
+        String yearMonthDay = "2016-05-14";
         String[] timeSplit1 = timeSplit[1].split(":");
         String hourMinute = timeSplit1[0] + ":" + timeSplit1[1] + ":" + "\\d{2}";
         String hourMinute1 = timeSplit1[0] + ":" + timeSplit1[1] + ":" + "00";
@@ -37,44 +39,55 @@ public class businessMain {
         return date;
 
     }
+
+    private boolean isHTTP(String srcPort, String destPort){
+        return (srcPort.equals("80") ||
+                srcPort.equals("8080") ||
+                destPort.equals("80") ||
+                destPort.equals("8080")) ? true : false;
+    }
+
+    private boolean isDNS(String srcPort, String destPort){
+        return (srcPort.equals("53") ||
+                destPort.equals("53")) ? true : false;
+    }
 //    public void getTop10IpLinks(List<Netflow> list){
 //        Map<>
 //    }
     public static void main(String[] args)throws Exception{
-        Socket socket = IO.socket("http://59.67.152.239:5001");
-        socket.connect();
+        Socket socketDNS = IO.socket("http://59.67.152.230:5001");
+        Socket socketHTTP = IO.socket("http://59.67.152.230:5002");
+        socketDNS.connect();
+        socketHTTP.connect();
         businessMain bus = new businessMain();
+        List<Netflow> dns = new ArrayList<Netflow>();
+        List<Netflow> http = new ArrayList<Netflow>();
         while (true){
             StorageManagement storage = new StorageManagement();
-//            SendToRemote send = new SendToRemote();
+            SendToRemote send = new SendToRemote();
             String[] date = bus.getCurrentTime();
-//            //将攻击事件传递给前台
-//            String attackEventRegex = IP + "-" + IP + "-" + date[0] + "-" + NUM;
-//            List<AttackEvent> attackEventList = storage.getAttackFromHbase(attackEventRegex);
-//            System.out.println(attackEventList.size());
-////            send.sendAttackToRemote(attackEventList, socket);
-//            //将网络统计数据传递给前台
-//            String attackMetricsRegex = date[1];
-//            nan.detection.Metrics attackMetrics = storage.getMetricsFromHbae(attackMetricsRegex);
-////            System.out.println(attackMetrics.toString());
-////            send.sendMetricsToRemote(attackMetrics, socket);
-//            //将应用统计数据传递给前台
             String applicationMetricsRegex = date[1] + "-53";
             System.out.println(applicationMetricsRegex);
             Metrics applicationMetrics = storage.getApplicationMetrics(applicationMetricsRegex);
-            System.out.println(applicationMetrics.getTime() + "\t" + applicationMetrics.getPackets() + "\t" + applicationMetrics.getBytes() + "\t" + applicationMetrics.getLinks());
-//            System.out.println(applicationMetrics.toString());
-//            send.sendApplicationMetricsToRemote(applicationMetrics, socket);
+            System.out.println(applicationMetrics.toString());
+            send.sendApplicationMetricsToRemote(applicationMetrics, socketDNS);
+            send.sendApplicationMetricsToRemote(applicationMetrics, socketHTTP);
             //将原始netflow 53的数据传递给前台
             String applicationNetflowRegex = date[0] + "-" + IP + "-" + IP + "-" + ENGLISH;
-//            String applicationNetflowRegex = date[0] + "-" + IP + "-" + IP + "-" + ENGLISH;
             List<Netflow> applicationNetflow = storage.getApplicationNetflow(applicationNetflowRegex);
+            for (Netflow netflow : applicationNetflow){
+                if (bus.isDNS(netflow.getSrcPort(), netflow.getDstPort())){
+                    dns.add(netflow);
+                }
+                if (bus.isHTTP(netflow.getSrcPort(), netflow.getDstPort())){
+                    http.add(netflow);
+                }
+            }
             System.out.println(applicationNetflow.size());
-//            for (Netflow netflow: applicationNetflow){
-//                System.out.println(netflow.getTime() + "\t" + netflow.getSrcIp() + "\t" +  netflow.getSrcPort() + "\t" + netflow.getDstIp() + "\t" + netflow.getDstPort() + "\t" + netflow.getProtocol());
-//            }
-//            send.sendApplicationNetflowToRemote(applicationNetflow, socket);
-//            send.sendApplicationNetflowToRemote1(applicationNetflow, socket);
+            send.sendApplicationNetflowToRemote(dns, socketDNS);
+            send.sendApplicationNetflowToRemote(http, socketHTTP);
+            dns.clear();
+            http.clear();
             Thread.sleep(60000);
         }
 

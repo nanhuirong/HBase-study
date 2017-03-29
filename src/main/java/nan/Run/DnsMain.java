@@ -7,38 +7,39 @@ import nan.hbase.StorageManagement;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by nanhuirong on 16-5-18.
  */
 public class DnsMain {
-    public static final String PATH = "/home/yaoxin/test/";
+    public static final String PATH = "/home/huirong/work/data/";
     public static final String RECORD = "dnsRecord/";
     public static final String METRICS = "dnsMetrics/";
     public static final String SUFFIX = "part-00000";
-    public static void main(String[] args)throws Exception{
+    public static void main(String[] args)throws Exception {
         StorageManagement storageManagement = new StorageManagement();
-        File file = new File(PATH + RECORD + SUFFIX);
+        File file = new File(PATH + "result.txt");
         BufferedReader br = new BufferedReader(new FileReader(file));
         String line = null;
-//        long count = 0;
-        while ((line = br.readLine()) != null){
+        long count = 0;
+        List<Netflow> list = new ArrayList<Netflow>();
+        while ((line = br.readLine()) != null) {
             String[] split = line.split(",");
             Netflow netflow = new Netflow(split[0], split[1], split[2], split[3], split[4], split[5]);
-            storageManagement.addApplicationNetflow(netflow);
-//            System.out.println(line);
-//            System.out.println(netflow.getTime() + "," + netflow.getSrcIp() + "," + netflow.getDstIp() + "," + netflow.getDstPort() + "," + netflow.getProtocol());
+            list.add(netflow);
+            count++;
+            if (count % 10000 == 0) {
+                storageManagement.addApplicationNetflow(list);
+                list.clear();
+                System.out.println(count);
+            }
+        }
+        if (list.size() > 0){
+            storageManagement.addApplicationNetflow(list);
+            list.clear();
         }
         br.close();
-        System.out.println("--------------------------netflow---------------------------------");
-        file = new File(PATH + METRICS + SUFFIX);
-        br = new BufferedReader(new FileReader(file));
-        while ((line = br.readLine()) != null){
-            String[] split = line.split(",");
-            Metrics metrics = new Metrics(split[0], split[1], split[2], split[3]);
-            storageManagement.addApplicationMetrics(metrics);
-        }
-        br.close();
-        System.out.println("--------------------------metrics---------------------------------");
     }
 }
