@@ -29,7 +29,7 @@ public class businessMain {
         System.out.println(time);
         String[] timeSplit = time.split(" ");
 //        String yearMonthDay = timeSplit[0];
-        String yearMonthDay = "2016-05-14";
+        String yearMonthDay = "2017-05-15";
         String[] timeSplit1 = timeSplit[1].split(":");
         String hourMinute = timeSplit1[0] + ":" + timeSplit1[1] + ":" + "\\d{2}";
         String hourMinute1 = timeSplit1[0] + ":" + timeSplit1[1] + ":" + "00";
@@ -72,7 +72,7 @@ public class businessMain {
             System.out.println(applicationMetrics.toString());
             send.sendApplicationMetricsToRemote(applicationMetrics, socketDNS);
             send.sendApplicationMetricsToRemote(applicationMetrics, socketHTTP);
-            //将原始netflow 53的数据传递给前台
+            //将原始netflow 53的数据  传递给前台
             String applicationNetflowRegex = date[0] + "-" + IP + "-" + IP + "-" + ENGLISH;
             List<Netflow> applicationNetflow = storage.getApplicationNetflow(applicationNetflowRegex);
             for (Netflow netflow : applicationNetflow){

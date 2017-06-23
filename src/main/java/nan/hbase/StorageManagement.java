@@ -28,7 +28,7 @@ public class StorageManagement {
     public static Configuration conf = null;
     static {
         conf = HBaseConfiguration.create();
-        conf.set("hbase.zookeeper.quorum", "311b-node-2,310b-node-1");
+        conf.set("hbase.zookeeper.quorum", "cluster");
     }
 
     /**
